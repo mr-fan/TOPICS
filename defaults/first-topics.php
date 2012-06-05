@@ -1,17 +1,17 @@
 <?php
 $t=time();
-$firsttopic = "INSERT INTO wb_mod_".$mod_dir." SET section_id = '".$section_id."', page_id = '".$page_id."', posted_first = '".$t."', posted_by = '1', authors = '1', 
-content_extra = '', txtr1 = 'http://websitebaker.at/topics/schnelle-einfuehrung.html', 
+$firsttopic = "INSERT INTO ".TABLE_PREFIX."_mod_".$mod_dir." SET section_id = '".$section_id."', page_id = '".$page_id."', posted_first = '".$t."', posted_by = '1', authors = '1',
+content_extra = '', txtr1 = 'http://websitebaker.at/topics/schnelle-einfuehrung.html',
 txtr2 = '', txtr3 = '', commenting = '2', active = '1', hascontent = '2', published_when = '', published_until = '', picture = '1.jpg', link = 'welcome', ";
 
 if (LANGUAGE == "DE") {
 $firsttopic .= "
-title = 'Willkommen bei Topics', 
-short_description = 'Topics stellt sich kurz vor', 
+title = 'Willkommen bei Topics',
+short_description = 'Topics stellt sich kurz vor',
 
 content_short = '<p>Topics ist so &auml;hnlich wie News, ist aber f&uuml;r ganze Artikel in gr&ouml;&szlig;erer Zahl ausgelegt. Dazu bietet Topics entsprechende M&ouml;glichkeiten: Themen-Bilder, dichte interne Verlinkung, (zeitgesteuerte) Archivierung, bessere Kommentarfunktion. </p>
 
-<p>Daf&uuml;r gibt es aber auch mehr Schalterchen und Optionen, diese schauen wir uns hier kurz an.</p>', 
+<p>Daf&uuml;r gibt es aber auch mehr Schalterchen und Optionen, diese schauen wir uns hier kurz an.</p>',
 
 content_long = '<p>Nat&uuml;rlich kann Topics auch wie das ganz normale News-Modul verwendet werden. Das Modul ist aber eher daf&uuml;r gedacht, einmal eingerichtet zu werden, damit <em>dann </em>fl&uuml;ssig und unkompliziert neue Artikel eingestellt werden k&ouml;nnen - in einheitlichem Design und Funktion.</p>
 <h3>Aktiv - von &quot;unver&ouml;ffentlicht&quot; bis &quot;Top-Aktuell&quot;</h3>
@@ -45,8 +45,8 @@ Will man die Inhalte fixieren, l&ouml;scht man einfach das Leerzeichen zu Beginn
 <h3>Weitere Themen / Siehe auch:</h3>
 <p>Die vorigen/n&auml;chsten Themen werden entsprechen den Voreinstellungen (siehe Optionen) erzeugt. Mit &quot;siehe auch&quot; k&ouml;nnen weitere Topics ausgew&auml;hlt werden. Dabei achtet ein Algorithmus darauf, dass kein Link doppelt vorkommt.</p>
 
-', 
-description = 'Topics ist ein WebsiteBaker-Modul, das fuer viele Artikel ausgelegt ist. Im Grunde so aehnlich wie News, aber viel flexibler. ', 
+',
+description = 'Topics ist ein WebsiteBaker-Modul, das fuer viele Artikel ausgelegt ist. Im Grunde so aehnlich wie News, aber viel flexibler. ',
 keywords = 'websitebaker,modul,topics,artikel,verzeichnis,flexibel';
 ";
 
@@ -54,27 +54,16 @@ keywords = 'websitebaker,modul,topics,artikel,verzeichnis,flexibel';
 } else {
 
 $firsttopic .= "
-title = 'Welcome to Topics', 
-short_description = 'This is your first Topic', 
+title = 'Welcome to Topics',
+short_description = 'This is your first Topic',
 
 
-content_short = '<p>This is the teaser</p>', 
+content_short = '<p>This is the teaser</p>',
 
-content_long = '<p>and this is the long content</p>', 
-description = '', 
+content_long = '<p>and this is the long content</p>',
+description = '',
 keywords = '';
 ";
 
 }
-
-/*
-$firsttopic .= "INSERT INTO wb_mod_".$mod_dir." SET section_id = '".$section_id."', page_id = '".$page_id."', posted_first = '".$t."', posted_by = '1', authors = '1', 
-
-title = 'Und weiter gehts', short_description = '', link = 'topic2', 
-content_short = '', content_long = '', content_extra = '', txtr1 = '', 
-txtr2 = '', txtr3 = '', commenting = '2', active = '1', hascontent = '2', published_when = '', published_until = '', picture = '2.jpg', 
-description = '', 
-keywords = '';
-";
-*/
 ?>

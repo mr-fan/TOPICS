@@ -1,4 +1,6 @@
-* 0.71.1 (2012-06-05)
+### TOPICS
+
+0.71.1 - 2012-06-05
 
  * fixed /default/first-topics.php [3] - table prefix was hardcoded
  * fixed /modify.php [203],[204] - removed unknown constant TIMEZONE
