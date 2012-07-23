@@ -1,6 +1,6 @@
 <?php
 $t=time();
-$firsttopic = "INSERT INTO ".TABLE_PREFIX."_mod_".$mod_dir." SET section_id = '".$section_id."', page_id = '".$page_id."', posted_first = '".$t."', posted_by = '1', authors = '1',
+$firsttopic = "INSERT INTO ".TABLE_PREFIX."mod_".$mod_dir." SET section_id = '".$section_id."', page_id = '".$page_id."', posted_first = '".$t."', posted_by = '1', authors = '1',
 content_extra = '', txtr1 = 'http://websitebaker.at/topics/schnelle-einfuehrung.html',
 txtr2 = '', txtr3 = '', commenting = '2', active = '1', hascontent = '2', published_when = '', published_until = '', picture = '1.jpg', link = 'welcome', ";
 
