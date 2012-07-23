@@ -1,8 +1,9 @@
 ### TOPICS
 
-0.72 - 
+0.71.2 - NOT PUBLISHED
 
 * fixed missing close tags in modify_topic.php
+* rewrite the complete RSS feed engine (rss.php)
 
 0.71.1 - 2012-06-05
 

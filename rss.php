@@ -1,141 +1,123 @@
 <?php
 
-/*
-Modified by mjm4842 - Michael Milette (2010-12-29)
- * Fixed RSS: Enabled auto-detection of default section_id (if there is only a
-   single section) thereby eliminating the "no section_id defined" in most cases
-   where there is only one Topics section on a website. s_id and section_id
-   override still available. Also corrected fetch_row() syntax error.
-   RSS listing is no longer always empty.
-*/
+/**
+ * TOPICS
+ *
+ * @author Chio Maisriml <media@beesign.com>
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://websitebaker.at
+ * @link https://addons.phpmanufaktur.de/topics
+ * @copyright Chio Maisriml http://websitebaker.at
+ * @copyright phpManufaktur by Ralf Hertsch
+ * @license http://creativecommons.org/licenses/by/3.0/ Creative Commons Attribution 3.0
+ */
 
-if(!defined('WB_PATH')) { 
-	require("../../config.php");
-	if(!defined('WB_PATH')) { exit("Cannot access this file directly"); }
+if (!defined('WB_PATH'))
+	require_once("../../config.php");
+
+global $database;
+
+// load the default settings
+require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/defaults/module_settings.default.php');
+require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/module_settings.php');
+
+// the Section ID is not set yet
+$section_id = 0;
+
+// use the parameter 's_id' as Section ID
+if (isset($_GET['s_id']) AND is_numeric($_GET['s_id'])) {
+	$section_id = $_GET['s_id'];
 }
 
-
-$mod_dir = basename(dirname(__FILE__));
-$tablename = $mod_dir;
-$usesettings = 0;
-//Default settings
-require_once(WB_PATH.'/modules/'.$mod_dir.'/defaults/module_settings.default.php');
-require_once(WB_PATH.'/modules/'.$mod_dir.'/module_settings.php');
-
-if(isset($_GET['s_id']) AND is_numeric($_GET['s_id'])) {
-	$s_id = $_GET['s_id'];
-	$usesettings = $s_id;	
-} 
-if (isset($section_id) AND is_numeric($section_id)) {$usesettings  = $section_id;}
-if ($usesettings == 0) {
-	$query_settings = $database->query("SELECT section_id FROM ".TABLE_PREFIX."mod_".$tablename."_settings LIMIT 1");
-  if ( $query_settings->numRows() == 1) {
-  	$fetch_settings = $query_settings->fetchRow();
-    $s_id = $fetch_settings['section_id'];
-  	$usesettings = $s_id;
-  } else {
-    die("no section_id defined");
-  }
-}
-// Include WB files
-
-require_once(WB_PATH.'/framework/class.frontend.php');
-$database = new database();
-//Query Settings
-$query_settings = $database->query("SELECT sort_topics, section_title, section_description, use_timebased_publishing, page_id FROM ".TABLE_PREFIX."mod_".$tablename."_settings WHERE section_id = '$usesettings'");
-
-if ( $query_settings->numRows() == 1) {	
-	$fetch_settings = $query_settings->fetchRow();
-	$page_id = $fetch_settings['page_id'];	
-	$sort_topics = $fetch_settings['sort_topics'];
-	$section_title = $fetch_settings['section_title'];
-	$section_description = strip_tags($fetch_settings['section_description']);
-	$use_timebased_publishing = $fetch_settings['use_timebased_publishing'];
-
-} else {
- 	die ("no data found");
+if ($section_id == 0) {
+  // read the first entry of the TOPICS settings to get a valid Section ID
+  $SQL = "SELECT `section_id` FROM `".TABLE_PREFIX."mod_topics_settings` LIMIT 1";
+  if (null == ($section_id = $database->get_one($SQL, MYSQL_ASSOC)))
+    die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+  if ($section_id < 1)
+    die(sprintf('[%s] %s', __LINE__, 'no section_id defined'));
 }
 
-$wb = new frontend();
-$wb->page_id = $page_id;
-$wb->get_page_details();
-$wb->get_website_settings();
+// get the TOPICS settings for the Section ID
+$SQL = sprintf("SELECT `sort_topics`,`section_title`,`section_description`,".
+    "`use_timebased_publishing`,`page_id` FROM `%smod_topics_settings` WHERE ".
+    "`section_id`='%d'", TABLE_PREFIX, $section_id);
+if (null == ($query = $database->query($SQL)))
+  die(sprintf('[%s] %s', __LINE__, $database->get_error()));
 
-/*$sort_topics_by = ' position DESC';
-if ($sort_topics == 1) {$sort_topics_by =  ' published_when DESC';}
-if ($sort_topics == 2) {$sort_topics_by =   ' topic_score DESC';}*/
-
-$sort_topics_by =  ' active DESC, published_when DESC';
-
-$use_timebased_publishing = $fetch_settings['use_timebased_publishing'];		
-$t = time();	
-if ($use_timebased_publishing > 1) {$query_extra = " AND (published_when = '0' OR published_when <= $t) AND (published_until = 0 OR published_until >= $t)";} else {$query_extra = '';}
-$qactive = " active > '3' ";
-$limit_sql = " LIMIT 50";
-
-if(isset($s_id)) {
-	$theq = "SELECT * FROM ".TABLE_PREFIX."mod_".$tablename." WHERE section_id = '".$s_id."' AND ". $qactive.$query_extra." ORDER BY ".$sort_topics_by.$limit_sql;
-} else {
-	$theq = "SELECT * FROM ".TABLE_PREFIX."mod_".$tablename." WHERE ". $qactive.$query_extra." ORDER BY ".$sort_topics_by.$limit_sql;
-	$section_title = $_SERVER['SERVER_NAME'];
-	$section_description = '';
+if ($query->numRows() == 1) {
+	$settings = $query->fetchRow();
+	$page_id = $settings['page_id'];
+	$sort_topics = $settings['sort_topics'];
+	$section_title = $settings['section_title'];
+	$section_description = strip_tags($settings['section_description']);
+	$use_timebased_publishing = $settings['use_timebased_publishing'];
+}
+else {
+  // settings not found
+ 	die (sprintf('[%s] %s', __LINE__, "no data found"));
 }
 
-//echo "bis hier2";
-
-//checkout if a charset is defined otherwise use UTF-8
-if(defined('DEFAULT_CHARSET')) {
-	$charset=DEFAULT_CHARSET;
-} else {
-	$charset='utf-8';
+$query_extra = '';
+if ($use_timebased_publishing > 1) {
+  $t = time();
+  $query_extra = " AND (`published_when`='0' OR `published_when` <= '$t') AND ".
+      "(`published_until`='0' OR `published_until` >= '$t')";
 }
-// Sending XML header
-header("Content-type: text/xml; charset=$charset" );
 
-// Header info
-// Required by CSS 2.0
-echo '<?xml version="1.0" encoding="'.$charset.'"?>';
-?> 
+$SQL = sprintf("SELECT * FROM `%smod_topics` WHERE `section_id`='%s' AND `active`>'3'%s ".
+    "ORDER BY `active` DESC, `published_when` DESC LIMIT 50",
+    TABLE_PREFIX, $section_id, $query_extra);
+if (null == ($query = $database->query($SQL)))
+  die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+
+$topics = '';
+// loop through the topics
+while (false !== ($topic = $query->fetchRow())) {
+  $topic_link = WB_URL.$topics_virtual_directory.$topic['link'].PAGE_EXTENSION;
+  $rfcdate = date('D, d M Y H:i:s O', (int) $topic["published_when"]);
+  $title = stripslashes($topic["title"]);
+  $content_short = stripslashes($topic["content_short"]);
+  // we don't want any dbGlossary entries here...
+  $content_short = str_replace('||', '', $content_short);
+  // @todo the CMS output filter should be executed here!
+  // add the topic to the $topics placeholder
+$topics .= <<<EOD
+    <item>
+    	<title><![CDATA[$title]]></title>
+    	<pubDate><![CDATA[$rfcdate]]></pubDate>
+    	<description><![CDATA[$content_short]]></description>
+    	<guid>$topic_link</guid>
+    	<link>$topic_link</link>
+    </item>
+EOD;
+} // while
+
+$link = WB_URL;
+$language = DEFAULT_LANGUAGE;
+$category = WEBSITE_TITLE;
+// @todo adding parameters to the $atom_link
+$atom_link = WB_URL.$topics_virtual_directory.'rss.php';
+$charset = defined('DEFAULT_CHARSET') ? DEFAULT_CHARSET : 'utf-8';
+
+// create the XML body with the topics
+$xml_body = <<<EOD
+<?xml version="1.0" encoding="$charset"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-<channel>
-<title><?php echo $section_title; ?></title>
-<link>http://<?php echo $_SERVER['SERVER_NAME']; ?></link>
-<description><?php echo $section_description; ?></description>
-
-<?php
-// Optional header info 
-?>
-<language><?php echo DEFAULT_LANGUAGE; ?></language>
-<category><?php echo WEBSITE_TITLE; ?></category>
-<generator>Website Baker Content Management System</generator>
-<atom:link href="<?php echo WB_URL.$topics_virtual_directory; ?>rss.php" rel="self" type="application/rss+xml" />
-
-<?php
-
-/*<copyright><?php echo WB_URL.$_SERVER['REQUEST_URI']; ?></copyright>
-<description> <?php echo $section_description; ?></description>
-<managingEditor><?php echo SERVER_EMAIL; ?></managingEditor>
-<webMaster><?php echo SERVER_EMAIL; ?></webMaster>*/
-// Get topics items from database
-
-//Query
-$result = $database->query($theq);
-
-//Generating the topics items
-while($topic = $result->fetchRow()){
-	$topic_link = WB_URL.$topics_virtual_directory.$topic['link'].PAGE_EXTENSION;	
-	$rfcdate = date('D, d M Y H:i:s O', (int)$topic["published_when"]);
-	?>
-	
-	<item>
-	<title><![CDATA[<?php echo stripslashes($topic["title"]); ?>]]></title>
-	<pubDate><![CDATA[<?php echo $rfcdate; ?>]]></pubDate>
-	<description><![CDATA[<?php echo stripslashes($topic["content_short"]); ?>]]></description>
-	<guid><?php echo $topic_link; ?></guid>
-	<link><?php echo $topic_link; ?></link>
-	</item>
-	
-	<?php } ?>
-
-</channel>
+  <channel>
+    <title>$section_title</title>
+    <link>$link</link>
+    <description>$section_description</description>
+    <language>$language</language>
+    <category>$category</category>
+    <generator>TOPICS for WebsiteBaker and LEPTON CMS</generator>
+    <atom:link href="$atom_link" rel="self" type="application/rss+xml" />
+    $topics
+  </channel>
 </rss>
+EOD;
+
+// Sending XML header
+header("Content-type: text/xml; charset=$charset");
+// output XML content
+echo $xml_body;
