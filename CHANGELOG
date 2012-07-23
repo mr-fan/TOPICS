@@ -1,10 +1,12 @@
 ### TOPICS
 
-0.71.2 - NOT PUBLISHED
+0.71.2 - 2012-07-23
 
 * fixed missing close tags in modify_topic.php
 * rewrite the complete RSS feed engine (rss.php)
 * fixed tablename in /defaults/first-topics.php (#2 - http://yals.de/OSGdt2)
+* added extended LEPTON CSFR protection for backend editing in modify_topic.php,
+  (#1 - http://yals.de/M5mFay), this bug is **not** fixed for the frontend now. 
 
 0.71.1 - 2012-06-05
 
