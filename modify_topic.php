@@ -88,8 +88,10 @@ if ($hascontent  > 0 AND $fetch_content['active'] > 0) {
 
 <h2><?php echo $TEXT['ADD'].'/'.$TEXT['MODIFY'].' '.$MOD_TOPICS['TOPIC']; ?></h2>
 
-<form name="modify" action="<?php echo WB_URL.'/modules/'.$mod_dir; ?>/save_topic.php" method="post" style="margin: 0;">
-
+<?php
+$leptoken = (defined('LEPTON_VERSION') && isset($_GET['leptoken'])) ? sprintf('?leptoken=%s', $_GET['leptoken']) : '';
+?>
+<form name="modify" action="<?php echo WB_URL.'/modules/'.$mod_dir; ?>/save_topic.php<?php echo $leptoken; ?>" method="post" style="margin: 0;">
 <input type="hidden" name="section_id" value="<?php echo $section_id; ?>" />
 <input type="hidden" name="page_id" value="<?php echo $page_id; ?>" />
 <input type="hidden" name="topic_id" value="<?php echo $topic_id; ?>" />
@@ -97,7 +99,12 @@ if ($hascontent  > 0 AND $fetch_content['active'] > 0) {
 <input type="hidden" name="fredit" value="<?php echo $fredit; ?>" />
 <input type="hidden" name="copytopic" id="copytopic" value="0" />
 <input type="hidden" name="posted_first" value="<?php echo $fetch_content['posted_first']; ?>" />
-
+<?php
+$leptoken = (defined('LEPTON_VERSION') && isset($_GET['leptoken'])) ? $_GET['leptoken'] : '';
+if (!empty($leptoken)) {
+?>
+<input type="hidden" name="leptoken" value="<?php echo $leptoken; ?>" />
+<?php } ?>
 
 <!--input type="hidden" name="topicchangedfields" id="topicchangedfields" value="-1" /-->
 
