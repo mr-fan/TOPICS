@@ -3,7 +3,7 @@
 $module_directory = 'topics';
 $module_name = 'Topics';
 $module_function = 'page';
-$module_version = '0.71.2';
+$module_version = '0.71.3';
 $module_status	= 'RC';
 $module_platform = '2.7.x';
 $module_author = 'Started by Chio Maisriml, websitebaker.at';

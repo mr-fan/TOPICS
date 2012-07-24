@@ -40,7 +40,7 @@ if ($section_id == 0) {
 
 // get the TOPICS settings for the Section ID
 $SQL = sprintf("SELECT `sort_topics`,`section_title`,`section_description`,".
-    "`use_timebased_publishing`,`page_id` FROM `%smod_topics_settings` WHERE ".
+    "`use_timebased_publishing`,`page_id`,`picture_dir` FROM `%smod_topics_settings` WHERE ".
     "`section_id`='%d'", TABLE_PREFIX, $section_id);
 if (null == ($query = $database->query($SQL)))
   die(sprintf('[%s] %s', __LINE__, $database->get_error()));
@@ -52,6 +52,7 @@ if ($query->numRows() == 1) {
 	$section_title = $settings['section_title'];
 	$section_description = strip_tags($settings['section_description']);
 	$use_timebased_publishing = $settings['use_timebased_publishing'];
+	$picture_url = WB_URL.$settings['picture_dir'].'/';
 }
 else {
   // settings not found
@@ -72,21 +73,33 @@ if (null == ($query = $database->query($SQL)))
   die(sprintf('[%s] %s', __LINE__, $database->get_error()));
 
 $topics = '';
+$image_width = 100;
+$image_width_px = $image_width.'px';
 // loop through the topics
 while (false !== ($topic = $query->fetchRow())) {
   $topic_link = WB_URL.$topics_virtual_directory.$topic['link'].PAGE_EXTENSION;
   $rfcdate = date('D, d M Y H:i:s O', (int) $topic["published_when"]);
   $title = stripslashes($topic["title"]);
-  $content_short = stripslashes($topic["content_short"]);
+  $content = stripslashes($topic["content_short"]);
   // we don't want any dbGlossary entries here...
-  $content_short = str_replace('||', '', $content_short);
+  $content = str_replace('||', '', $content);
   // @todo the CMS output filter should be executed here!
+  if (!empty($topic['picture'])) {
+    // add a image to the content
+    $img_url = $picture_url.$topic['picture'];
+$content = <<<EOD
+<div>
+  <img style="float:left;width:$image_width_px;height:auto;margin:0;padding:0 20px 20px 0;" src="$img_url" width="$image_width" alt="$title" />
+  $content
+</div>
+EOD;
+  } // image
   // add the topic to the $topics placeholder
 $topics .= <<<EOD
     <item>
     	<title><![CDATA[$title]]></title>
     	<pubDate><![CDATA[$rfcdate]]></pubDate>
-    	<description><![CDATA[$content_short]]></description>
+    	<description><![CDATA[$content]]></description>
     	<guid>$topic_link</guid>
     	<link>$topic_link</link>
     </item>
@@ -97,7 +110,7 @@ $link = WB_URL;
 $language = DEFAULT_LANGUAGE;
 $category = WEBSITE_TITLE;
 // @todo adding parameters to the $atom_link
-$atom_link = WB_URL.$topics_virtual_directory.'rss.php';
+$atom_link = WB_URL.'/modules/topics/rss.php';
 $charset = defined('DEFAULT_CHARSET') ? DEFAULT_CHARSET : 'utf-8';
 
 // create the XML body with the topics

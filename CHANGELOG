@@ -1,5 +1,11 @@
 ### TOPICS
 
+0.71.3 - 2012-07-24
+
+* The RSS feed engine (rss.php) embed now pictures in the feeds if a image is 
+  used in the topics article
+* fixed the wrong URL referencing of the RSS feed engine (rss.php)  
+
 0.71.2 - 2012-07-23
 
 * fixed missing close tags in modify_topic.php
