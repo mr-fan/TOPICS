@@ -1,5 +1,9 @@
 ### TOPICS
 
+0.71.4 - NOT PUBLISHED
+
+* reworked the search function for topics
+
 0.71.3 - 2012-07-24
 
 * The RSS feed engine (rss.php) embed now pictures in the feeds if a image is 
