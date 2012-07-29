@@ -152,7 +152,7 @@ if (!empty($leptoken)) {
 
 	?>
 
-	<input type="text" id="publishdate" name="publishdate" value="<?php if($fetch_content['published_when']==0) echo $published_when; else print gmdate($jscal_format, $fetch_content['published_when']);?>" style="width: 120px;" />
+	<input type="text" id="publishdate" name="publishdate" value="<?php if($fetch_content['published_when']==0) echo $published_when; else print date($jscal_format, $fetch_content['published_when']);?>" style="width: 120px;" />
 	<img src="<?php echo THEME_URL ?>/images/clock_16.png" id="publishdate_trigger" style="cursor: pointer;" title="<?php echo $TEXT['CALENDAR']; ?>" onmouseover="this.style.background='lightgrey';" onmouseout="this.style.background=''" alt="" />
 	<img src="<?php echo THEME_URL ?>/images/clock_del_16.png" style="cursor: pointer;" title="<?php echo $TEXT['DELETE_DATE']; ?>" onmouseover="this.style.background='lightgrey';" onmouseout="this.style.background=''" onclick="document.modify.publishdate.value=''" alt=""/>
 	</td></tr>

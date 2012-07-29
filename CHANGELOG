@@ -3,6 +3,8 @@
 0.71.4 - NOT PUBLISHED
 
 * reworked the search function for topics
+* fixed wrong calculated output of publishing date in modify_topic.php 
+  (#5 - http://yals.de/ObfeKD)
 
 0.71.3 - 2012-07-24
 
