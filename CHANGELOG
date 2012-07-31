@@ -5,6 +5,8 @@
 * reworked the search function for topics
 * fixed wrong calculated output of publishing date in modify_topic.php 
   (#5 - http://yals.de/ObfeKD)
+* The RSS feed engine (rss.php) now processes Droplets before delivering the
+  contents
 
 0.71.3 - 2012-07-24
 

@@ -83,7 +83,12 @@ while (false !== ($topic = $query->fetchRow())) {
   $content = stripslashes($topic["content_short"]);
   // we don't want any dbGlossary entries here...
   $content = str_replace('||', '', $content);
-  // @todo the CMS output filter should be executed here!
+  if (file_exists(WB_PATH .'/modules/droplets/droplets.php')) {
+    // we must process the droplets to get the real output content
+    include_once(WB_PATH .'/modules/droplets/droplets.php');
+    if (function_exists('evalDroplets'))
+      $content = evalDroplets($content);
+  }
   if (!empty($topic['picture'])) {
     // add a image to the content
     $img_url = $picture_url.$topic['picture'];
