@@ -23,10 +23,31 @@ require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/module_settings.p
 
 // the Section ID is not set yet
 $section_id = 0;
+$parameters = array();
 
-// use the parameter 's_id' as Section ID
-if (isset($_GET['s_id']) AND is_numeric($_GET['s_id'])) {
+// use the parameter 's_id' as Section ID (for backward compatibility only)
+if (isset($_GET['s_id']) && is_numeric($_GET['s_id'])) {
 	$section_id = $_GET['s_id'];
+	$parameters['section_id'] = $section_id;
+}
+// use the parameter 'section_id' as Section ID
+if (isset($_GET['section_id']) && is_numeric($_GET['section_id'])) {
+	$section_id = $_GET['section_id'];
+	$parameters['section_id'] = $section_id;
+}
+
+// set the limit for delivering articles, default is 20
+$article_limit = 20;
+if (isset($_GET['limit'])) {
+  $article_limit = (int) $_GET['limit'];
+  $parameters['limit'] = $article_limit;
+}
+
+// use the parameter 'counter' to switch the counter on/off - default is true (on)
+$use_counter = true;
+if (isset($_GET['counter']) && (strtolower($_GET['counter']) == 'false')) {
+  $use_counter = false;
+  $parameters['counter'] = 'false';
 }
 
 if ($section_id == 0) {
@@ -67,18 +88,21 @@ if ($use_timebased_publishing > 1) {
 }
 
 $SQL = sprintf("SELECT * FROM `%smod_topics` WHERE `section_id`='%s' AND `active`>'3'%s ".
-    "ORDER BY `active` DESC, `published_when` DESC LIMIT 50",
-    TABLE_PREFIX, $section_id, $query_extra);
+    "ORDER BY `active` DESC, `published_when` DESC LIMIT %d",
+    TABLE_PREFIX, $section_id, $query_extra, $article_limit);
 if (null == ($query = $database->query($SQL)))
   die(sprintf('[%s] %s', __LINE__, $database->get_error()));
 
 $topics = '';
 $image_width = 100;
 $image_width_px = $image_width.'px';
+$last_publishing_date = 0;
 // loop through the topics
 while (false !== ($topic = $query->fetchRow())) {
   $topic_link = WB_URL.$topics_virtual_directory.$topic['link'].PAGE_EXTENSION;
   $rfcdate = date('D, d M Y H:i:s O', (int) $topic["published_when"]);
+  if ($last_publishing_date < (int) $topic['published_when'])
+    $last_publishing_date = (int) $topic['published_when'];
   $title = stripslashes($topic["title"]);
   $content = stripslashes($topic["content_short"]);
   // we don't want any dbGlossary entries here...
@@ -112,11 +136,15 @@ EOD;
 } // while
 
 $link = WB_URL;
-$language = DEFAULT_LANGUAGE;
+$language = strtolower(DEFAULT_LANGUAGE);
 $category = WEBSITE_TITLE;
-// @todo adding parameters to the $atom_link
-$atom_link = WB_URL.'/modules/topics/rss.php';
+if (count($parameters) > 0) {
+  $atom_link = WB_URL."/modules/topics/rss.php?".http_build_query($parameters);
+}
+else
+  $atom_link = WB_URL."/modules/topics/rss.php";
 $charset = defined('DEFAULT_CHARSET') ? DEFAULT_CHARSET : 'utf-8';
+$rfcdate = date('D, d M Y H:i:s O', $last_publishing_date);
 
 // create the XML body with the topics
 $xml_body = <<<EOD
@@ -129,11 +157,58 @@ $xml_body = <<<EOD
     <language>$language</language>
     <category>$category</category>
     <generator>TOPICS for WebsiteBaker and LEPTON CMS</generator>
+    <pubDate><![CDATA[$rfcdate]]></pubDate>
+    <ttl>60</ttl>
     <atom:link href="$atom_link" rel="self" type="application/rss+xml" />
     $topics
   </channel>
 </rss>
 EOD;
+
+if ($use_counter) {
+  // ok - before we send out the feed we will track the caller!
+  $date = date('Y-m-d');
+  // exists entries for days in the past?
+  $SQL = "SELECT DISTINCT `date`,`section_id` FROM `".TABLE_PREFIX."mod_topics_rss_count` WHERE `date`<'$date'";
+  if (null == ($past = $database->query($SQL)))
+    die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+  while (false !== ($old = $past->fetchRow(MYSQL_ASSOC))) {
+    // walk through previous entries, add them to statistic and delete them from the count table
+    $SQL = "SELECT COUNT(`md5_ip`) AS `callers`, SUM(`count`) AS `views` FROM `".TABLE_PREFIX."mod_topics_rss_count` WHERE `date`='{$old['date']}' AND `section_id`='{$old['section_id']}'";
+    if (null == ($result = $database->query($SQL)))
+      die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+    if (false ===($statistic = $result->fetchRow(MYSQL_ASSOC)))
+      die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+    // insert the statistic into the statistic table
+    $SQL = "INSERT INTO `".TABLE_PREFIX."mod_topics_rss_statistic` (`section_id`,`date`,`callers`,`views`) VALUES ('{$old['section_id']}','{$old['date']}','{$statistic['callers']}','{$statistic['views']}')";
+    if (!$database->query($SQL))
+      die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+    // now delete the old entries
+    $SQL = "DELETE FROM `".TABLE_PREFIX."mod_topics_rss_count` WHERE `date`='{$old['date']}' AND `section_id`='{$old['section_id']}'";
+    if (!$database->query($SQL))
+      die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+  }
+  // hash the remote IP address
+  $md5_ip = md5($_SERVER['REMOTE_ADDR']);
+  // check if this has called the feed previous
+  $SQL = "SELECT * FROM `".TABLE_PREFIX."mod_topics_rss_count` WHERE `md5_ip`='$md5_ip' AND `section_id`='$section_id' AND `date`='$date'";
+  if (null == ($query = $database->query($SQL)))
+    die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+  if ($query->numRows() > 0) {
+    // add this call to the existing record
+    $update = $query->fetchRow(MYSQL_ASSOC);
+    $count = $update['count']+1;
+    $SQL = "UPDATE `".TABLE_PREFIX."mod_topics_rss_count` SET `count`='$count' WHERE `id`='{$update['id']}'";
+    if (!$database->query($SQL))
+      die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+  }
+  else {
+    // add a new record
+    $SQL = "INSERT INTO `".TABLE_PREFIX."mod_topics_rss_count` (`section_id`, `md5_ip`, `count`, `date`) VALUES ('$section_id', '$md5_ip', '1', '$date')";
+    if (!$database->query($SQL))
+      die(sprintf('[%s] %s', __LINE__, $database->get_error()));
+  }
+} // $use_counter
 
 // Sending XML header
 header("Content-type: text/xml; charset=$charset");
