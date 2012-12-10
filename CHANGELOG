@@ -1,18 +1,21 @@
 ### TOPICS
 
-0.71.4 - NOT PUBLISHED
+0.71.4 - 2012-12-10
 
 * reworked the search function for topics
-* fixed wrong calculated output of publishing date in modify_topic.php 
+* fixed wrong calculated output of publishing date in modify_topic.php
   (#5 - http://yals.de/ObfeKD)
 * The RSS feed engine (rss.php) now processes Droplets before delivering the
   contents
+* added: the RSS feed log now each call to a statistic table
+* added: the droplet topics_rss_statistic uses Google Charts to display a
+  RSS statistic by day, week or month
 
 0.71.3 - 2012-07-24
 
-* The RSS feed engine (rss.php) embed now pictures in the feeds if a image is 
+* The RSS feed engine (rss.php) embed now pictures in the feeds if a image is
   used in the topics article
-* fixed the wrong URL referencing of the RSS feed engine (rss.php)  
+* fixed the wrong URL referencing of the RSS feed engine (rss.php)
 
 0.71.2 - 2012-07-23
 
@@ -20,11 +23,11 @@
 * rewrite the complete RSS feed engine (rss.php)
 * fixed tablename in /defaults/first-topics.php (#2 - http://yals.de/OSGdt2)
 * added extended LEPTON CSFR protection for backend editing in modify_topic.php,
-  (#1 - http://yals.de/M5mFay), this bug is **not** fixed for the frontend now. 
+  (#1 - http://yals.de/M5mFay), this bug is **not** fixed for the frontend now.
 
 0.71.1 - 2012-06-05
 
  * fixed /default/first-topics.php [3] - table prefix was hardcoded
  * fixed /modify.php [203],[204] - removed unknown constant TIMEZONE
- * fixed /functions_small.php [11] - removed unknown constant DEFAULT_TIMEZONE 
+ * fixed /functions_small.php [11] - removed unknown constant DEFAULT_TIMEZONE
  * create GitHub repository for TOPICS
