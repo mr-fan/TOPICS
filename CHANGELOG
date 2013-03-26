@@ -1,5 +1,9 @@
 ### TOPICS
 
+0.71.5 - 2013-03-26
+
+* fixed wrong versioning in info.php (prohibit update from previous releases)
+
 0.71.4 - 2012-12-10
 
 * reworked the search function for topics
