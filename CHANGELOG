@@ -1,5 +1,9 @@
 ### TOPICS
 
+0.71.6 - 2013-05-03
+
+* fixed wrong continue command in add.php
+
 0.71.5 - 2013-03-26
 
 * fixed wrong versioning in info.php (prohibit update from previous releases)

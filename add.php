@@ -48,15 +48,15 @@ $section_title = $fetch_menu['menu_title'];
 $addstring = '';
 $query = $database->query("SELECT * FROM ".TABLE_PREFIX."mod_".$mod_dir."_settings WHERE is_master_for = '' ORDER BY section_id DESC LIMIT 1");
 if($query->numRows() == 1) {
-	$sets = $query->fetchRow();	
+	$sets = $query->fetchRow();
 	foreach ($sets as $key => $value) {
-		if (is_numeric($key)) {continue(0);}
-		if ($key == 'section_id' OR $key == 'page_id' OR $key == 'section_title')  {continue(0);}
-		if ($value == '') {continue(0);}
-		
+		if (is_numeric($key)) {continue;}
+		if ($key == 'section_id' OR $key == 'page_id' OR $key == 'section_title')  {continue;}
+		if ($value == '') {continue;}
+
 		$addstring .= ', '.$key."='".addslashes($value)."'";
 	}
-	
+
 	$theq = "INSERT INTO ".TABLE_PREFIX."mod_".$mod_dir."_settings SET ";
 	$theq .= "section_id='".$section_id."', page_id='".$page_id."', section_title='".$section_title."' ". $addstring;
 } else {
@@ -70,10 +70,10 @@ $database->query($theq);
 //Add a frirst topic_
 //include('defaults/first-topics.php');
 if (isset($firsttopic)) {
-	$database->query($firsttopic);	
+	$database->query($firsttopic);
 	// Get the id
 	$topic_id = $database->get_one("SELECT LAST_INSERT_ID()");
-	
+
 	$filename = WB_PATH.$topics_directory.'welcome'.PAGE_EXTENSION;
 	define('TOPICS_DIRECTORY_DEPTH', $topics_directory_depth);
 	topics_archive_file ($filename, $topic_id, $section_id, $page_id);
