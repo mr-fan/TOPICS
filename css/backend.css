@@ -1,0 +1,4 @@
+#choosertable {line-height: auto;}
+div#fc_content_container div#fc_main_content h2,
+div#fc_content_container div#fc_main_content form { width:80%; margin:15px !important; }
+div#fc_content_container div#fc_main_content div.buttonfloater { right:20px; }
